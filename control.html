@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      .status {
+        padding: 6px 12px;
+        font-size: 14px;
+        display: block;
+        text-align: center;
+        background-color: gray;
+        border-radius: 3px;
+        border: 1px solid #ccc;
+      }
+      hr {
+        margin: 0 0 8px 0;
+      }
+      .trigger {
+        display: inline-block;
+        width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <h4>Content layout</h4>
+    <div class='row'>
+      <div class='col-md-2'>
+        <label>Clockwise rotation</label>
+        <select id='r' class="form-control">
+          <option value="0">
+            None
+          </option>
+          <option value="90">
+            90°
+          </option>
+          <option value="180">
+            180°
+          </option>
+          <option value="270">
+            270°
+          </option>
+        </select>
+      </div>
+      <div class='col-md-2'>
+        <label>x1</label>
+        <input id='x1' type='number' class='form-control'>
+      </div>
+      <div class='col-md-2'>
+        <label>y1</label>
+        <input id='y1' type='number' class='form-control'>
+      </div>
+      <div class='col-md-2'>
+        <label>x2</label>
+        <input id='x2' type='number' class='form-control'>
+      </div>
+      <div class='col-md-2'>
+        <label>y2</label>
+        <input id='y2' type='number' class='form-control'>
+      </div>
+      <div class='col-md-2'>
+        <label>Apply layout template</label>
+        <select id='template' class="form-control">
+          <option value="">Select template</option>
+          <optgroup label="Single screen">
+            <option value="s">Single display</option>
+          </optgroup>
+          <optgroup label="Two screen layouts">
+            <option value="h1">Left of two horizontal displays</option>
+            <option value="h2">Right of two horizontal displays</option>
+            <option value="v1">Top of two vertical displays</option>
+            <option value="v2">Bottom of two vertical displays</option>
+          </optgroup>
+          <optgroup label="2x2 Wall">
+            <option value="2x2-1">Top left of 2x2 displays</option>
+            <option value="2x2-2">Top right of 2x2 displays</option>
+            <option value="2x2-3">Bottom left of 2x2 displays</option>
+            <option value="2x2-4">Bottom right of 2x2 displays</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <br/>
+
+    <div class='row'>
+      <div class='col-md-3'>
+        <label>Preferred alternative (if available)</label>
+        <select id='alt' class="form-control">
+          <option value="default">None (play default)</option>
+          <option value="1">Play alternative 1</option>
+          <option value="2">Play alternative 2</option>
+          <option value="3">Play alternative 3</option>
+          <option value="4">Play alternative 4</option>
+          <option value="5">Play alternative 5</option>
+          <option value="6">Play alternative 6</option>
+          <option value="7">Play alternative 7</option>
+          <option value="8">Play alternative 8</option>
+        </select>
+      </div>
+      <div class='col-md-3'>
+        <label>Use overlay</label>
+        <select id='overlay' class="form-control">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class='col-md-4 col-md-offset-2'>
+        <label>&nbsp;</label>
+        <div class='text-right'>
+          <div class="btn-group">
+            <button id='wipe' class='btn btn-default'>Reset to default</button>
+            <button id='save' class='btn btn-primary'>Save device customization</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br/>
+    <hr/>
+
+    <div class='row'>
+      <div class='col-md-8'>
+        <h4>Debugging overlay</h4>
+        <div class="btn-group">
+          <button id='debug-on' class='btn btn-primary'>Identify screen (60s)</button>
+          <button id='debug-off' class='btn btn-default'>Hide</button>
+        </div>
+        &nbsp;
+        <input type='text' id='trigger'class='form-control trigger'
+          placeholder="Trigger cmd (e.g. '0')"
+        />
+      </div>
+      <div class='col-md-4'>
+        <h4>Synchronization Status</h4>
+        <div class='row'>
+          <div class='col-xs-6'>
+            <div class='status' id='all_synced'></div>
+          </div>
+          <div class='col-xs-6'>
+            <button class='status btn btn-block' id='leader'>Loading..</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='popup'></div>
+
+    <!-- Provides the interface to info-beamer hosted -->
+    <script src="hosted.js"></script>
+
+    <script>
+      "strict";
+      ib.setDefaultStyle()
+
+      let e_x1 = document.getElementById('x1'),
+          e_y1 = document.getElementById('y1'),
+          e_x2 = document.getElementById('x2'),
+          e_y2 = document.getElementById('y2'),
+          e_r = document.getElementById('r'),
+          e_alt = document.getElementById('alt'),
+          e_overlay = document.getElementById('overlay'),
+          e_save = document.getElementById('save'),
+          e_wipe = document.getElementById('wipe'),
+          e_all_synced = document.getElementById('all_synced'),
+          e_leader = document.getElementById('leader'),
+          e_dbg_on = document.getElementById('debug-on'),
+          e_dbg_off = document.getElementById('debug-off'),
+          e_tmpl = document.getElementById('template'),
+          e_trigger = document.getElementById('trigger')
+
+      let leader_id = null
+
+      async function update() {
+        let kv = await ib.device_kv([
+            'all_synced',
+            'is_leader',
+            'peers',
+            'leader_id',
+        ])
+
+        let is_leader = kv.is_leader == '1'
+        let all_synced = kv.all_synced == '1'
+        let num_peers = parseInt(kv.peers) || 0
+
+        if (is_leader) {
+          if (all_synced) {
+            e_all_synced.style.backgroundColor = '#90ee90'
+            e_all_synced.innerText = `${num_peers} peers synced`
+          } else {
+            e_all_synced.style.backgroundColor = '#ffc1c1'
+            e_all_synced.innerText = `${num_peers} peers unsynced`
+          }
+          e_leader.style.backgroundColor = '#90ee90'
+          e_leader.innerText = 'Leader device'
+          leader_id = null
+        } else {
+          e_all_synced.innerText = 'Follower device'
+          e_all_synced.style.backgroundColor = 'gray'
+          e_leader.style.backgroundColor = '#90ee90'
+          e_leader.innerText = 'Go to leader'
+          leader_id = kv.leader_id
+        }
+      }
+
+      ib.ready.then(async () => {
+        update()
+        setInterval(update, 5000)
+
+        let dd = await ib.device_data()
+        e_x1.value = dd.x1 || 0
+        e_y1.value = dd.y1 || 0
+        e_x2.value = dd.x2 || 100
+        e_y2.value = dd.y2 || 100
+        e_r.value = dd.rotation || 0
+        e_alt.value = dd.alternative_idx || 'default'
+        e_overlay.value = dd.overlay === false ? 'no' : 'yes'
+
+        e_leader.addEventListener('click', e => {
+          if (leader_id != null) {
+            ib.open.device(leader_id)
+          }
+        })
+
+        e_dbg_on.addEventListener('click', e => {
+          ib.sendCommand("debug/show", 60)
+        })
+
+        e_dbg_off.addEventListener('click', e => {
+          ib.sendCommand("debug/show", 0)
+        })
+
+        e_trigger.addEventListener('keydown', e => {
+          if (e.keyCode == 13) {
+            ib.sendCommand("trigger", e.target.value)
+          }
+        })
+
+        e_tmpl.addEventListener('change', e => {
+          let x1, y1, x2, y2
+          let tmpl = e.target.value
+          if (tmpl == '') {
+            return
+          } else if (tmpl == 's') {
+            x1 = 0, y1 = 0, x2 = 100, y2 = 100
+          } else if (tmpl == 'h1') {
+            x1 = 0, y1 = 0, x2 = 200, y2 = 100
+          } else if (tmpl == 'h2') {
+            x1 = -100, y1 = 0, x2 = 100, y2 = 100
+          } else if (tmpl == 'v1') {
+            x1 = 0, y1 = 0, x2 = 100, y2 = 200
+          } else if (tmpl == 'v2') {
+            x1 = 0, y1 = -100, x2 = 100, y2 = 100
+          } else if (tmpl == '2x2-1') {
+            x1 = 0, y1 = 0, x2 = 200, y2 = 200
+          } else if (tmpl == '2x2-2') {
+            x1 = -100, y1 = 0, x2 = 100, y2 = 200
+          } else if (tmpl == '2x2-3') {
+            x1 = 0, y1 = -100, x2 = 200, y2 = 100
+          } else if (tmpl == '2x2-4') {
+            x1 = -100, y1 = -100, x2 = 100, y2 = 100
+          }
+          e_x1.value = x1, e_y1.value = y1
+          e_x2.value = x2, e_y2.value = y2
+        })
+
+        e_wipe.addEventListener('click', async () => {
+          e_tmpl.value = ''
+          e_x1.value = e_y1.value = e_r.value = 0
+          e_x2.value = e_y2.value = 100
+          e_alt.value = 'default'
+          e_overlay.value = 'yes'
+        })
+
+        e_save.addEventListener('click', async () => {
+          try {
+            let int_from_str = s => {
+              let i = parseInt(s)
+              if (isNaN(i)) {
+                throw `Invalid value '${s}'`
+              }
+              return i
+            }
+            let dd = {
+              x1: int_from_str(e_x1.value),
+              y1: int_from_str(e_y1.value),
+              x2: int_from_str(e_x2.value),
+              y2: int_from_str(e_y2.value),
+              rotation: int_from_str(e_r.value),
+            }
+            if (dd.x2 <= dd.x1) {
+              throw 'Invalid horizontal values: Negative or zero'
+            }
+            if (dd.y2 <= dd.y1) {
+              throw 'Invalid vertical values: Negative or zero'
+            }
+            if (e_alt.value != "default") {
+              dd.alternative_idx = parseInt(e_alt.value)
+            }
+            if (e_overlay.value == "no") {
+              dd.overlay = false
+            }
+            await ib.device_data(dd)
+            ib.notification.success("Saved. Changes will be applied to the device now.")
+          } catch (e) {
+            ib.notification.error(`Cannot set device data: ${e}`)
+          }
+        })
+      })
+    </script>
+    </script>
+  </body>
+</html>

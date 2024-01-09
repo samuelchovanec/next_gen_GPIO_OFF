@@ -1,0 +1,85 @@
+{
+    "name": "Overlay",
+    "options": [{
+        "title": "Content overlay",
+        "intro": "Overlay main content with a playlist of images. Size can be given in portion of screen space (when using values between 0 and 1) or in absolute pixel values.",
+        "type": "section"
+    }, {
+        "title": "Reserved bottom margin",
+        "ui_width": 4,
+        "name": "reserve_bottom",
+        "type": "float",
+        "placeholder": "Pixels or portion of total height",
+        "default": 0 
+    }, {
+        "title": "Reserved right margin",
+        "ui_width": 4,
+        "name": "reserve_right",
+        "type": "float",
+        "placeholder": "Pixels or portion of total width",
+        "default": 0 
+    }, {
+        "title": "Overlay placement",
+        "ui_width": 4,
+        "name": "placement",
+        "type": "select",
+        "options": [
+            ["auto", "Automatic"],
+            ["br_margin20", "Bottom right, 20px margin"],
+            ["tr_margin20", "Top right, 20px margin"]
+        ],
+        "default": "auto"
+    }, {
+        "title": "Overlay playlist",
+        "name": "overlays",
+        "type": "list",
+        "itemname": "Image",
+        "items": [{
+            "title": "Asset",
+            "ui_width": 9,
+            "name": "asset",
+            "type": "resource",
+            "valid": ["image"],
+            "features": ["image4k"],
+            "default": "empty.png"
+        }, {
+            "title": "Play time",
+            "ui_width": 3,
+            "name": "duration",
+            "type": "duration",
+            "hint": "How long should this item be displayed on screen. Minimum 2 seconds",
+            "default": 10
+        }]
+    }, 
+    
+    {
+        "title": "Playlist effects",
+        "intro": "Adjust how the main content playback works.",
+        "type": "section"
+    }, {
+        "title": "Ken burns effect",
+        "ui_width": 6,
+        "name": "ken_burns",
+        "type": "select",
+        "options": [
+            [false, "Disabled"],
+            ["images", "Enabled for images"]
+        ],
+        "default": false
+    }, {
+        "title": "Progress indicator",
+        "ui_width": 6,
+        "name": "progress_style",
+        "type": "select",
+        "hint": "Shows playback progress for the current main playlist item",
+        "options": [
+            [false, "Disabled"],
+            ["bar_thin_white", "Bar (thin, white)"],
+            ["bar_thick_white", "Bar (thick, white)"],
+            ["bar_thin_black", "Bar (thin, black)"],
+            ["bar_thick_black", "Bar (thick, black)"],
+            ["circle", "Circle"]
+        ],
+        "default": "no"
+    }]
+}

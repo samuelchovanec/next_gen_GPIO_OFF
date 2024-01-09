@@ -1,0 +1,181 @@
+{
+    "name": "Content Player",
+    "control_ui": "control.html",
+    "permissions": {
+        "network": "Needs network access for synchronization across devices",
+        "gpio": "Access GPIO"
+    },
+    "optional": [
+        "fallback.*.jpg",
+        "control.html",
+        "doc-*"
+    ],
+    "scratch_scope": "package",
+    "options": [{
+        "title": "Playlist configuration",
+        "intro": "Each playlist item can be individually scheduled. You can specify optional alternative pieces of content for each playlist item. Specify which of those a device perferrably plays on each device's detail page.",
+        "type": "section"
+    }, {
+        "title": "Content cycle",
+        "name": "playlist",
+        "type": "list",
+        "itemname": "Slot",
+        "items": [{
+            "title": "Default asset",
+            "ui_width": 6,
+            "name": "asset",
+            "type": "resource",
+            "valid": ["image", "video", "child"],
+            "features": ["image4k"],
+            "default": "empty.png"
+        }, {
+            "title": "Play time",
+            "ui_width": 2,
+            "name": "duration",
+            "type": "duration",
+            "hint": "How long should this item be displayed on screen. Use 0 to use automatically selected duration",
+            "default": 10
+        }, {
+            "title": "Schedule",
+            "ui_width": 4,
+            "name": "schedule",
+            "type": "schedule",
+            "default": "always"
+        }, {
+            "title": "",
+            "name": "alternatives",
+            "type": "list",
+            "itemname": "Alternative asset",
+            "allow_playlist": false,
+            "items": [{
+                "title": "Asset",
+                "ui_width": 6,
+                "name": "asset",
+                "type": "resource",
+                "valid": ["image", "video", "child"],
+                "features": ["image4k"],
+                "default": "empty.png"
+            }, {
+                "title": "Alternative",
+                "ui_width": 6,
+                "name": "alternative_idx",
+                "hint": "Configure a device to prefer this alternative and it will play this asset instead of the default asset.",
+                "type": "select",
+                "options": [
+                    [1, "Alternative 1"],
+                    [2, "Alternative 2"],
+                    [3, "Alternative 3"],
+                    [4, "Alternative 4"],
+                    [5, "Alternative 5"],
+                    [6, "Alternative 6"],
+                    [7, "Alternative 7"],
+                    [8, "Alternative 8"]
+                ],
+                "default": 1
+            }]
+        }]
+    }, 
+
+    {
+        "title": "Playback settings",
+        "intro": "You can find additional per-device settings on the detail page of a device after assigning this setup to it.",
+        "type": "section"
+    }, {
+        "title": "Horizontal fallback",
+        "ui_width": 4,
+        "name": "fallback_h",
+        "type": "resource",
+        "hint": "Shown on desync, while starting, when nothing scheduled, etc..",
+        "valid": ["image"],
+        "default": "fallback_h.jpg"
+    }, {
+        "title": "Vertical fallback",
+        "ui_width": 4,
+        "name": "fallback_v",
+        "type": "resource",
+        "hint": "Shown on desync, while starting, when nothing scheduled, etc..",
+        "valid": ["image"],
+        "default": "fallback_v.jpg"
+    }, {
+        "title": "When playing only fallback",
+        "ui_width": 4,
+        "name": "blank",
+        "info": "Turn off attached display",
+        "doc_link": true,
+        "type": "select",
+        "options": [
+            [false, "Show fallback content"],
+            [true, "Turn off display"]
+        ],
+        "default": false
+    }, {
+        "title": "Content scaling",
+        "ui_width": 4,
+        "name": "scaling",
+        "doc_link": true,
+        "type": "select",
+        "options": [
+            ["keep_aspect", "Honor aspect ratio"],
+            ["keep_5", "Max 5% stretch"],
+            ["keep_10", "Max 10% stretch"],
+            ["keep_15", "Max 15% stretch"],
+            ["keep_20", "Max 20% stretch"],
+            ["fill", "Fill available space"]
+        ],
+        "default": "keep_aspect"
+    }, {
+        "title": "Audio",
+        "ui_width": 4,
+        "name": "audio",
+        "doc_link": true,
+        "type": "select",
+        "options": [
+            [true, "Audio enabled"],
+            [false, "Audio disabled"]
+        ],
+        "default": true
+    }, {
+        "title": "Proof-of-play",
+        "ui_width": 4,
+        "name": "pop",
+        "hint": "Requires proof-of-play enabled account",
+        "doc_link": true,
+        "type": "select",
+        "options": [
+            [false, "No logging"],
+            [true, "Logging enabled"]
+        ],
+        "default": false
+    }, {
+        "title": "Remote control",
+        "ui_width": 4,
+        "name": "remote_port",
+        "hint": "Opens UDP to network. Can be used to manually trigger configured playlist slots.",
+        "doc_link": true,
+        "type": "select",
+        "options": [
+            [0, "Disabled"],
+            [10000, "UDP port 10000"],
+            [20000, "UDP port 20000"]
+        ],
+        "default": 0
+    }, {
+        "title": "Slot fusing",
+        "ui_width": 4,
+        "name": "fuse",
+        "hint": "If the same asset plays across consecutive slots on the same display, don't restart but continue playback, fusing the playback across slots.",
+        "type": "select",
+        "options": [
+            [false, "Force playback per item"],
+            [true, "Fuse playback across slots"]
+        ],
+        "default": false
+    }, {
+        "title": "Overlay",
+        "ui_width": 4,
+        "name": "overlay",
+        "type": "resource",
+        "valid": ["child"],
+        "default": "default-overlay"
+    }]
+}
