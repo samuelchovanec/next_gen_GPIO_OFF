@@ -12,6 +12,7 @@ from hosted.p2p import OrderedEventGroup
 
 config.restart_on_update()
 device.gpio.setup_pin(26, direction="out")
+device.gpio.set_pin_value(26,  high=True)
 
 print("on")
 
