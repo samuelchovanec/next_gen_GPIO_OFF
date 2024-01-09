@@ -1,5 +1,5 @@
 {
-    "name": "HD player Screen On",
+    "name": "HD player Screen Off",
     "author": "Florian Wesch <fw@info-beamer.com>",
     "desc": "Displays images and videos in a rotation",
     "repository": "https://github.com/info-beamer/package-player-ng",
