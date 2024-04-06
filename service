@@ -1,3 +1,4 @@
 #!/usr/bin/python2.7
 from hosted import device
+config.restart_on_update()
 device.gpio.set_pin_value(4,  high=True)
