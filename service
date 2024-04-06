@@ -14,6 +14,7 @@ config.restart_on_update()
 
 
 device.gpio.set_pin_value(26,  high=True)
+device.gpio.set_pin_value(19,  high=True)
 print("on")
 
 lua = node.rpc()
